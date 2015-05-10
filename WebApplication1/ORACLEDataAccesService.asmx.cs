@@ -18,15 +18,20 @@ namespace MyDBManager
     // [System.Web.Script.Services.ScriptService]
     public class ORACLEDataAccesService : System.Web.Services.WebService
     {
-        [WebMethod]
-        public XmlDocument execCommand(string user, string database, string password, string command)
-        {
-            string connectionString = "Data Source=" + database + ";User Id=" + user + ";Password=" + password + ";";
 
-            OracleConnection connection = new OracleConnection(connectionString);
+        string vConnectionString;
+        string vCommandString;
+
+        //WEBMETHODS
+        [WebMethod]
+        public XmlDocument execCommand(string aUser, string aDataBaseSID, string aPassword, string aCommand)
+        {
+            prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);
+
+            OracleConnection connection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand myCommand;
             OracleDataReader myReader;
@@ -34,18 +39,18 @@ namespace MyDBManager
             try
             {
                 connection.Open();
-                myCommand = new OracleCommand(command, connection);
+                myCommand = new OracleCommand(aCommand, connection);
                 myReader = myCommand.ExecuteReader();
 
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -57,12 +62,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -77,10 +82,10 @@ namespace MyDBManager
             {
                 if (myReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
                     for (int i = 0; i < myReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
                         colName.InnerText = myReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
@@ -88,7 +93,7 @@ namespace MyDBManager
                 }
                 while (myReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
                     for (int i = 0; i < myReader.FieldCount; i++)
                     {
                         XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
@@ -154,12 +159,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -171,12 +176,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -195,14 +200,14 @@ namespace MyDBManager
         }
 
         [WebMethod]
-        public XmlDocument execPlan(string user, string database, string password, string command)
+        public XmlDocument execPlan(string aUser, string aDataBaseSID, string aPassword, string aCommand)
         {
-            string connectionString = "Data Source=" + database + ";User Id=" + user + ";Password=" + password + ";";
+            prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);
 
-            OracleConnection connection = new OracleConnection(connectionString);
+            OracleConnection connection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand myCommand;
             OracleCommand runPlan;
@@ -211,21 +216,21 @@ namespace MyDBManager
             try
             {
                 connection.Open();
-                myCommand = new OracleCommand("explain plan for " + command, connection);
+                myCommand = new OracleCommand(string.Format(MyDBManager.Constants.ORACLE_EXPLAIN_PLAN, aCommand), connection);
                 myCommand.ExecuteNonQuery();
 
-                runPlan = new OracleCommand("select id, operation, cardinality, bytes, cost, time, object_owner from plan_table where plan_id = ( select max(plan_id) from plan_table )", connection);
+                runPlan = new OracleCommand(MyDBManager.Constants.ORACLE_SELECT_EXPLAIN_PLAN_INFO, connection);
                 myReader = runPlan.ExecuteReader();
 
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -237,12 +242,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -257,7 +262,7 @@ namespace MyDBManager
             {
                 while (myReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
                     for (int i = 0; i < myReader.FieldCount; i++)
                     {
                         XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
@@ -329,12 +334,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -346,12 +351,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -370,33 +375,33 @@ namespace MyDBManager
         }
 
         [WebMethod]
-        public XmlDocument getMetadata(string user, string database, string password, string type, string tablename)
+        public XmlDocument getMetadata(string aUser, string aDataBaseSID, string aPassword, string aMetaDataType, string aTableName)
         {
-            string connectionString = "Data Source=" + database + ";User Id=" + user + ";Password=" + password + ";";
+            prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);
 
-            OracleConnection connection = new OracleConnection(connectionString);
+            OracleConnection connection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            OracleCommand myCommand;
-            OracleDataReader myReader;
+            OracleCommand vOracleCommand;
+            OracleDataReader vOracleDataReader;
 
             try
             {
                 connection.Open();
-                myCommand = new OracleCommand("select dbms_metadata.get_ddl('" + type + "','" + tablename + "','" + user + "') from dual", connection);
-                myReader = myCommand.ExecuteReader();
+                vOracleCommand = new OracleCommand(string.Format(MyDBManager.Constants.ORACLE_SELECT_METADATA,aMetaDataType,aTableName,aUser), connection);
+                vOracleDataReader = vOracleCommand.ExecuteReader();
 
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -408,12 +413,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -426,80 +431,80 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement("ddl");
+                        XmlNode grid = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_DDL);
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vOracleDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vOracleDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vOracleDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vOracleDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vOracleDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vOracleDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vOracleDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vOracleDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vOracleDataReader.GetChar(i);
                                 break;
                             default:
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetValue(i).ToString();
+                                    field = "" + vOracleDataReader.GetValue(i).ToString();
                                 break;
                         }
                         grid.InnerText = field;
@@ -511,12 +516,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -528,12 +533,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -545,40 +550,40 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
+                vOracleDataReader.Close();
                 connection.Close();
             }
             return xmlDoc;
         }
 
         [WebMethod]
-        public XmlDocument getFunctions(string user, string database, string password)
+        public XmlDocument getFunctions(string aUser, string aDataBaseSID, string aPassword)
         {
-            string connectionString = "Data Source=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            string command = "select * from user_objects where object_type = 'FUNCTION'";
+            prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);
+            string vOracleCommandString = MyDBManager.Constants.ORACLE_SELECT_FUNCTIONS;
 
-            OracleConnection connection = new OracleConnection(connectionString);
+            OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            OracleCommand myCommand;
-            OracleDataReader myReader;
+            OracleCommand vOracleCommand;
+            OracleDataReader vOracleDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new OracleCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vOracleConnection.Open();
+                vOracleCommand = new OracleCommand(vOracleCommandString, vOracleConnection);
+                vOracleDataReader = vOracleCommand.ExecuteReader();
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -590,12 +595,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -608,74 +613,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vOracleDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vOracleDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vOracleDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vOracleDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vOracleDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vOracleDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vOracleDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vOracleDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vOracleDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -687,12 +692,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -704,12 +709,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -721,40 +726,40 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vOracleDataReader.Close();
+                vOracleConnection.Close();
             }
             return xmlDoc;
         }
 
         [WebMethod]
-        public XmlDocument getProcedures(string user, string database, string password)
+        public XmlDocument getProcedures(string aUser, string aDataBaseSID, string aPassword)
         {
-            string connectionString = "Data Source=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            string command = "select * from USER_PROCEDURES";
+            prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);
+            string vOracleCommandString = MyDBManager.Constants.ORACLE_SELECT_PROCEDURES;
 
-            OracleConnection connection = new OracleConnection(connectionString);
+            OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            OracleCommand myCommand;
-            OracleDataReader myReader;
+            OracleCommand vOracleCommand;
+            OracleDataReader vOracleDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new OracleCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vOracleConnection.Open();
+                vOracleCommand = new OracleCommand(vOracleCommandString, vOracleConnection);
+                vOracleDataReader = vOracleCommand.ExecuteReader();
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -766,12 +771,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -784,74 +789,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vOracleDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vOracleDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vOracleDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vOracleDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vOracleDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vOracleDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vOracleDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vOracleDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vOracleDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -863,12 +868,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -880,12 +885,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -897,40 +902,40 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vOracleDataReader.Close();
+                vOracleConnection.Close();
             }
             return xmlDoc;
         }
 
         [WebMethod]
-        public XmlDocument getSynonyms(string user, string database, string password)
+        public XmlDocument getSynonyms(string aUser, string aDataBaseSID, string aPassword)
         {
-            string connectionString = "Data Source=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            string command = "select * from USER_SYNONYMS";
+            prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);
+            string vOracleCommandString = MyDBManager.Constants.ORACLE_SELECT_SYNONYMS;
 
-            OracleConnection connection = new OracleConnection(connectionString);
+            OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            OracleCommand myCommand;
-            OracleDataReader myReader;
+            OracleCommand vOracleCommand;
+            OracleDataReader vOracleDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new OracleCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vOracleConnection.Open();
+                vOracleCommand = new OracleCommand(vOracleCommandString, vOracleConnection);
+                vOracleDataReader = vOracleCommand.ExecuteReader();
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -942,12 +947,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -960,74 +965,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vOracleDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vOracleDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vOracleDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vOracleDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vOracleDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vOracleDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vOracleDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vOracleDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vOracleDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -1039,12 +1044,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1056,12 +1061,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1073,40 +1078,40 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vOracleDataReader.Close();
+                vOracleConnection.Close();
             }
             return xmlDoc;
         }
 
         [WebMethod]
-        public XmlDocument getViews(string user, string database, string password)
+        public XmlDocument getViews(string aUser, string aDataBaseSID, string aPassword)
         {
-            string connectionString = "Data Source=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            string command = "select * from USER_VIEWS";
+            prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);
+            string vOracleCommandString = MyDBManager.Constants.ORACLE_SELECT_VIEWS;
 
-            OracleConnection connection = new OracleConnection(connectionString);
+            OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            OracleCommand myCommand;
-            OracleDataReader myReader;
+            OracleCommand vOracleCommand;
+            OracleDataReader vOracleDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new OracleCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vOracleConnection.Open();
+                vOracleCommand = new OracleCommand(vOracleCommandString, vOracleConnection);
+                vOracleDataReader = vOracleCommand.ExecuteReader();
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1118,12 +1123,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1136,74 +1141,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vOracleDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vOracleDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vOracleDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vOracleDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vOracleDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vOracleDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vOracleDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vOracleDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vOracleDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -1215,12 +1220,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1232,12 +1237,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1249,40 +1254,40 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vOracleDataReader.Close();
+                vOracleConnection.Close();
             }
             return xmlDoc;
         }
 
         [WebMethod]
-        public XmlDocument getIndexes(string user, string database, string password)
+        public XmlDocument getIndexes(string aUser, string aDataBaseSID, string aPassword)
         {
-            string connectionString = "Data Source=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            string command = "select * from USER_INDEXES";
+            prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);
+            string vOracleCommandString = MyDBManager.Constants.ORACLE_SELECT_INDEXES;
 
-            OracleConnection connection = new OracleConnection(connectionString);
+            OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            OracleCommand myCommand;
-            OracleDataReader myReader;
+            OracleCommand vOracleCommand;
+            OracleDataReader vOracleDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new OracleCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vOracleConnection.Open();
+                vOracleCommand = new OracleCommand(vOracleCommandString, vOracleConnection);
+                vOracleDataReader = vOracleCommand.ExecuteReader();
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1294,12 +1299,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1312,74 +1317,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vOracleDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vOracleDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vOracleDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vOracleDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vOracleDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vOracleDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vOracleDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vOracleDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vOracleDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -1391,12 +1396,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1408,12 +1413,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1425,40 +1430,40 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vOracleDataReader.Close();
+                vOracleConnection.Close();
             }
             return xmlDoc;
         }
 
         [WebMethod]
-        public XmlDocument getTriggers(string user, string database, string password)
+        public XmlDocument getTriggers(string aUser, string aDataBaseSID, string aPassword)
         {
-            string connectionString = "Data Source=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            string command = "select * from USER_TRIGGERS";
+            prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);
+            string vOracleCommandString = MyDBManager.Constants.ORACLE_SELECT_TRIGGERS;
 
-            OracleConnection connection = new OracleConnection(connectionString);
+            OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            OracleCommand myCommand;
-            OracleDataReader myReader;
+            OracleCommand vOracleCommand;
+            OracleDataReader vOracleDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new OracleCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vOracleConnection.Open();
+                vOracleCommand = new OracleCommand(vOracleCommandString, vOracleConnection);
+                vOracleDataReader = vOracleCommand.ExecuteReader();
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1470,12 +1475,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1488,74 +1493,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vOracleDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vOracleDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vOracleDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vOracleDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vOracleDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vOracleDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vOracleDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vOracleDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vOracleDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -1567,12 +1572,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1584,12 +1589,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1601,40 +1606,40 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vOracleDataReader.Close();
+                vOracleConnection.Close();
             }
             return xmlDoc;
         }
 
         [WebMethod]
-        public XmlDocument getTables(string user, string database, string password)
+        public XmlDocument getTables(string aUser, string aDataBaseSID, string aPassword)
         {
-            string connectionString = "Data Source=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            string command = "select * from USER_TABLES";
+            prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);
+            string vOracleCommandString = MyDBManager.Constants.ORACLE_USER_TABLES;
 
-            OracleConnection connection = new OracleConnection(connectionString);
+            OracleConnection connection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            OracleCommand myCommand;
-            OracleDataReader myReader;
+            OracleCommand vOracleCommand;
+            OracleDataReader vOracleDataReader;
 
             try
             {
                 connection.Open();
-                myCommand = new OracleCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vOracleCommand = new OracleCommand(vOracleCommandString, connection);
+                vOracleDataReader = vOracleCommand.ExecuteReader();
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1646,12 +1651,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1664,74 +1669,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vOracleDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vOracleDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vOracleDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vOracleDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vOracleDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vOracleDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vOracleDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vOracleDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vOracleDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -1743,12 +1748,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1760,12 +1765,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1777,40 +1782,40 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
+                vOracleDataReader.Close();
                 connection.Close();
             }
             return xmlDoc;
         }
 
         [WebMethod]
-        public XmlDocument getTablespaces(string user, string database, string password)
+        public XmlDocument getTablespaces(string aUser, string aDataBaseSID, string aPassword)
         {
-            string connectionString = "Data Source=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            string command = "select * from USER_TABLESPACES";
+            prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);
+            string vOracleCommandString = MyDBManager.Constants.ORACLE_SELECT_TABLESPACES;
 
-            OracleConnection connection = new OracleConnection(connectionString);
+            OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            OracleCommand myCommand;
-            OracleDataReader myReader;
+            OracleCommand vOracleCommand;
+            OracleDataReader vOracleDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new OracleCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vOracleConnection.Open();
+                vOracleCommand = new OracleCommand(vOracleCommandString, vOracleConnection);
+                vOracleDataReader = vOracleCommand.ExecuteReader();
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1822,12 +1827,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1840,74 +1845,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vOracleDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vOracleDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vOracleDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vOracleDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vOracleDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vOracleDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vOracleDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vOracleDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vOracleDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -1919,12 +1924,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1936,12 +1941,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1953,40 +1958,40 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vOracleDataReader.Close();
+                vOracleConnection.Close();
             }
             return xmlDoc;
         }
 
         [WebMethod]
-        public XmlDocument getPackages(string user, string database, string password)
+        public XmlDocument getPackages(string aUser, string aDataBaseSID, string aPassword)
         {
-            string connectionString = "Data Source=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            string command = "select * from user_objects where object_type = 'PACKAGE'";
+            prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);
+            string vOracleCommandString = MyDBManager.Constants.ORACLE_SELECT_PACKAGES;
 
-            OracleConnection connection = new OracleConnection(connectionString);
+            OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            OracleCommand myCommand;
-            OracleDataReader myReader;
+            OracleCommand vOracleCommand;
+            OracleDataReader vOracleDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new OracleCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vOracleConnection.Open();
+                vOracleCommand = new OracleCommand(vOracleCommandString, vOracleConnection);
+                vOracleDataReader = vOracleCommand.ExecuteReader();
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1998,12 +2003,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -2016,74 +2021,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vOracleDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vOracleDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vOracleDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vOracleDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vOracleDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vOracleDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vOracleDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vOracleDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vOracleDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -2095,12 +2100,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -2112,12 +2117,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -2129,40 +2134,40 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vOracleDataReader.Close();
+                vOracleConnection.Close();
             }
             return xmlDoc;
         }
 
         [WebMethod]
-        public XmlDocument getInfoSesion(string user, string database, string password)
+        public XmlDocument getInfoSesion(string aUser, string aDataBaseSID, string aPassword)
         {
-            string connectionString = "Data Source=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            string command = "select sid, serial#, status, username, terminal, command, schemaname from v$session";
+            prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);
+            string vOracleCommandString = MyDBManager.Constants.ORACLE_SELECT_SESSION_INFO;
 
-            OracleConnection connection = new OracleConnection(connectionString);
+            OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            OracleCommand myCommand;
-            OracleDataReader myReader;
+            OracleCommand vOracleCommand;
+            OracleDataReader vOracleDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new OracleCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vOracleConnection.Open();
+                vOracleCommand = new OracleCommand(vOracleCommandString, vOracleConnection);
+                vOracleDataReader = vOracleCommand.ExecuteReader();
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -2174,12 +2179,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -2192,74 +2197,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vOracleDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vOracleDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vOracleDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vOracleDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vOracleDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vOracleDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vOracleDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vOracleDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vOracleDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vOracleDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -2271,12 +2276,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -2288,12 +2293,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -2305,36 +2310,48 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vOracleDataReader.Close();
+                vOracleConnection.Close();
             }
             return xmlDoc;
         }
 
         [WebMethod]
-        public bool isLogin(string user, string database, string password)
+        public bool isLogin(string aUser, string aPassword, string aDataBaseSID)
         {
-            string connectionString = "Data Source=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            string command = "select * from dual";
+            prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);
+            vCommandString = MyDBManager.Constants.ORACLE_SELECT_DUAL;
 
-            OracleConnection connection = new OracleConnection(connectionString);
+            OracleConnection vOracleconnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            OracleCommand myCommand;
-            OracleDataReader myReader;
+            OracleCommand vOracleCommand;
+            OracleDataReader vOracleDatReader;
 
             try
             {
-                connection.Open();
-                myCommand = new OracleCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vOracleconnection.Open();
+                vOracleCommand = new OracleCommand(vCommandString, vOracleconnection);
+                vOracleDatReader = vOracleCommand.ExecuteReader();
                 return true;
             }
             catch (Exception ex)
             {
                 return false;
+            }
+        }
+
+        //CLASSMETHODS
+        public void prepareOracleConnectionString(string aUser, string aPassword, string aDataBaseSID)
+        {
+
+            vConnectionString = String.Format(MyDBManager.Constants.ORACLE_CONNECTION_STRING, aDataBaseSID, aUser, aPassword);
+            //SYS AND SYSTEM USER NEED SYSDBA PRIVILIGES
+            if ((aUser == MyDBManager.Constants.ORACLE_SYS_USER) || (aUser == MyDBManager.Constants.ORACLE_SYSTEM_USER))
+            {
+                vConnectionString = string.Concat(vConnectionString, MyDBManager.Constants.ORACLE_DBA_PRIVILEGE_SYSDBA);
             }
         }
     }

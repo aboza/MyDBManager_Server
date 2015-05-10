@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Web;
 using System.Web.Services;
 using System.Xml;
+using Oracle.DataAccess.Client;
 
 namespace MyDBManager
 {
@@ -1971,7 +1972,7 @@ namespace MyDBManager
         {
             string command = "SELECT * FROM sys.tables";
             string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            //string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";" + "Integrated Security = true";
+           
 
 
             SqlConnection connection = new SqlConnection();
