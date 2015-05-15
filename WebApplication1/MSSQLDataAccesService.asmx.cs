@@ -16,34 +16,38 @@ namespace MyDBManager
     public class MSSQLDataAccesService : System.Web.Services.WebService
     {
 
+        string vConnectionString;
+        string vCommandString;
+        //WebMethods
         [WebMethod]
-        public XmlDocument execCommand(string user, string database, string password, string command)
+        public XmlDocument execCommand(string aUser, string aDataBase, string aPassword, string aCommand)
         {
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            SqlCommand myCommand;
-            SqlDataReader myReader;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new SqlCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vMSSQLConnection.Open();
+                vMSSQLCommand = new SqlCommand(aCommand, vMSSQLConnection);
+                vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
 
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -55,12 +59,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -73,74 +77,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vMSSQLDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
+                        colName.InnerText = vMSSQLDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vMSSQLDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vMSSQLDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vMSSQLDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vMSSQLDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vMSSQLDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vMSSQLDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vMSSQLDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vMSSQLDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vMSSQLDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vMSSQLDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vMSSQLDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -152,12 +156,12 @@ namespace MyDBManager
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -169,12 +173,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -186,40 +190,40 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vMSSQLDataReader.Close();
+                vMSSQLConnection.Close();
             }
             return xmlDoc;
         }
 
         [WebMethod]
-        public XmlDocument getFunctions(string user, string database, string password)
+        public XmlDocument getFunctions(string aUser, string aDataBase, string aPassword)
         {
-            string command = "SELECT * FROM sys.objects WHERE type_desc LIKE '%FUNCTION%';";
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            SqlCommand myCommand;
-            SqlDataReader myReader;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new SqlCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vMSSQLConnection.Open();
+                vMSSQLCommand = new SqlCommand(MyDBManager.Constants.MSSQL_SELECT_FUNCTIONS, vMSSQLConnection);
+                vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -231,12 +235,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -249,74 +253,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vMSSQLDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
+                        colName.InnerText = vMSSQLDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vMSSQLDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vMSSQLDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vMSSQLDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vMSSQLDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vMSSQLDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vMSSQLDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vMSSQLDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vMSSQLDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vMSSQLDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vMSSQLDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vMSSQLDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -328,12 +332,12 @@ namespace MyDBManager
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -345,12 +349,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -362,39 +366,39 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vMSSQLDataReader.Close();
+                vMSSQLConnection.Close();
             }
             return xmlDoc;
         }
         [WebMethod]
-        public XmlDocument getTableSpaces(string user, string database, string password)
+        public XmlDocument getTableSpaces(string aUser, string aDataBase, string aPassword)
         {
-            string command = "select * from sys.databases;";
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            SqlCommand myCommand;
-            SqlDataReader myReader;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new SqlCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vMSSQLConnection.Open();
+                vMSSQLCommand = new SqlCommand(MyDBManager.Constants.MSSQL_SELECT_TABLESPACES, vMSSQLConnection);
+                vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -406,12 +410,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -424,74 +428,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vMSSQLDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
+                        colName.InnerText = vMSSQLDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vMSSQLDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vMSSQLDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vMSSQLDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vMSSQLDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vMSSQLDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vMSSQLDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vMSSQLDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vMSSQLDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vMSSQLDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vMSSQLDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vMSSQLDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -503,12 +507,12 @@ namespace MyDBManager
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -520,12 +524,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -537,40 +541,40 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vMSSQLDataReader.Close();
+                vMSSQLConnection.Close();
             }
             return xmlDoc;
         }
 
         [WebMethod]
-        public XmlDocument getProcedures(string user, string database, string password)
+        public XmlDocument getProcedures(string aUser, string aDataBase, string aPassword)
         {
-            string command = "SELECT * FROM sys.procedures";
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            SqlCommand myCommand;
-            SqlDataReader myReader;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new SqlCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vMSSQLConnection.Open();
+                vMSSQLCommand = new SqlCommand(MyDBManager.Constants.MSSQL_SELECT_PROCEDURES, vMSSQLConnection);
+                vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -582,12 +586,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -600,74 +604,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vMSSQLDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
+                        colName.InnerText = vMSSQLDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vMSSQLDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vMSSQLDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vMSSQLDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vMSSQLDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vMSSQLDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vMSSQLDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vMSSQLDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vMSSQLDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vMSSQLDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vMSSQLDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vMSSQLDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -679,12 +683,12 @@ namespace MyDBManager
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -696,12 +700,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -713,39 +717,39 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vMSSQLDataReader.Close();
+                vMSSQLConnection.Close();
             }
             return xmlDoc;
         }
         [WebMethod]
-        public XmlDocument getSynonyms(string user, string database, string password)
+        public XmlDocument getSynonyms(string aUser, string aDataBase, string aPassword)
         {
-            string command = "SELECT * FROM sys.SYNONYMS";
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            SqlCommand myCommand;
-            SqlDataReader myReader;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new SqlCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vMSSQLConnection.Open();
+                vMSSQLCommand = new SqlCommand(MyDBManager.Constants.MSSQL_SELECT_SYNONYMS, vMSSQLConnection);
+                vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -757,12 +761,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -775,74 +779,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vMSSQLDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
+                        colName.InnerText = vMSSQLDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vMSSQLDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vMSSQLDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vMSSQLDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vMSSQLDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vMSSQLDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vMSSQLDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vMSSQLDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vMSSQLDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vMSSQLDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vMSSQLDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vMSSQLDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -854,12 +858,12 @@ namespace MyDBManager
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -871,12 +875,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -888,39 +892,39 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vMSSQLDataReader.Close();
+                vMSSQLConnection.Close();
             }
             return xmlDoc;
         }
         [WebMethod]
-        public XmlDocument getViews(string user, string database, string password)
+        public XmlDocument getViews(string aUser, string aDataBase, string aPassword)
         {
-            string command = "SELECT * FROM sys.views";
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+
             SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
+            connection.ConnectionString = vConnectionString;
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            SqlCommand myCommand;
-            SqlDataReader myReader;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
 
             try
             {
                 connection.Open();
-                myCommand = new SqlCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vMSSQLCommand = new SqlCommand(MyDBManager.Constants.MSSQL_SELECT_VIEWS, connection);
+                vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -932,12 +936,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -950,74 +954,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vMSSQLDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
+                        colName.InnerText = vMSSQLDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vMSSQLDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vMSSQLDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vMSSQLDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vMSSQLDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vMSSQLDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vMSSQLDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vMSSQLDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vMSSQLDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vMSSQLDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vMSSQLDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vMSSQLDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -1029,12 +1033,12 @@ namespace MyDBManager
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1046,12 +1050,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1063,39 +1067,39 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
+                vMSSQLDataReader.Close();
                 connection.Close();
             }
             return xmlDoc;
         }
         [WebMethod]
-        public XmlDocument getIndexes(string user, string database, string password)
+        public XmlDocument getIndexes(string aUser, string aDataBase, string aPassword)
         {
-            string command = "SELECT * FROM sys.indexes";
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            SqlCommand myCommand;
-            SqlDataReader myReader;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new SqlCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vMSSQLConnection.Open();
+                vMSSQLCommand = new SqlCommand(MyDBManager.Constants.MSSQL_SELECT_INDEXES, vMSSQLConnection);
+                vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1107,12 +1111,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1125,74 +1129,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vMSSQLDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
+                        colName.InnerText = vMSSQLDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vMSSQLDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vMSSQLDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vMSSQLDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vMSSQLDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vMSSQLDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vMSSQLDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vMSSQLDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vMSSQLDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vMSSQLDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vMSSQLDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vMSSQLDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -1204,12 +1208,12 @@ namespace MyDBManager
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1221,12 +1225,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1238,39 +1242,39 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vMSSQLDataReader.Close();
+                vMSSQLConnection.Close();
             }
             return xmlDoc;
         }
         [WebMethod]
-        public XmlDocument getTriggers(string user, string database, string password)
+        public XmlDocument getTriggers(string aUser, string aDataBase, string aPassword)
         {
-            string command = "SELECT * FROM sys.triggers";
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            SqlCommand myCommand;
-            SqlDataReader myReader;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new SqlCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vMSSQLConnection.Open();
+                vMSSQLCommand = new SqlCommand(MyDBManager.Constants.MSSQL_SELECT_TRIGGERS, vMSSQLConnection);
+                vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1282,12 +1286,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1300,74 +1304,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vMSSQLDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
+                        colName.InnerText = vMSSQLDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vMSSQLDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vMSSQLDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vMSSQLDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vMSSQLDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vMSSQLDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vMSSQLDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vMSSQLDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vMSSQLDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vMSSQLDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vMSSQLDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vMSSQLDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -1379,12 +1383,12 @@ namespace MyDBManager
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1396,12 +1400,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1413,39 +1417,39 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vMSSQLDataReader.Close();
+                vMSSQLConnection.Close();
             }
             return xmlDoc;
         }
         [WebMethod]
-        public XmlDocument getTables(string user, string database, string password)
+        public XmlDocument getTables(string aUser, string aDataBase, string aPassword)
         {
-            string command = "SELECT * FROM sys.tables";
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            SqlCommand myCommand;
-            SqlDataReader myReader;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new SqlCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vMSSQLConnection.Open();
+                vMSSQLCommand = new SqlCommand(MyDBManager.Constants.MSSQL_SELECT_TABLES, vMSSQLConnection);
+                vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1457,12 +1461,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1475,74 +1479,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vMSSQLDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
+                        colName.InnerText = vMSSQLDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vMSSQLDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vMSSQLDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vMSSQLDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vMSSQLDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vMSSQLDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vMSSQLDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vMSSQLDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vMSSQLDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vMSSQLDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vMSSQLDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vMSSQLDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -1554,12 +1558,12 @@ namespace MyDBManager
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1571,12 +1575,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1588,237 +1592,236 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vMSSQLDataReader.Close();
+                vMSSQLConnection.Close();
             }
             return xmlDoc;
         }
 
         [WebMethod]
-        public string getTableDDL(string user, string database, string password, string tablename)
+        public string getTableDDL(string aUser, string aDataBase, string aPassword, string aTablename)
         {
-            List<string> Columnas = new List<string>();
-            List<string> FKS = new List<string>();
-            List<string> PKS = new List<string>();
-            List<string> Types = new List<string>();
-            string command = "select * from " + tablename + ";";
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            string response = "CREATE TABLE " + tablename + " ( ";
-            SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
-            SqlCommand myCommand;
-            SqlDataReader myReader;
-            connection.Open();
-            myCommand = new SqlCommand(command, connection);
-            myReader = myCommand.ExecuteReader();
-            if (myReader.HasRows)
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+            List<string> vTableColumns = new List<string>();
+            List<string> vTableFKs = new List<string>();
+            List<string> vTablePKs = new List<string>();
+            List<string> vTableTypes = new List<string>();
+
+            string vDDLResult = "CREATE TABLE " + aTablename + " ( ";
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
+            vMSSQLConnection.Open();
+            vMSSQLCommand = new SqlCommand(string.Format(MyDBManager.Constants.MSSQL_SELECT_ALL_FROM, aTablename), vMSSQLConnection);
+            vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
+            if (vMSSQLDataReader.HasRows)
             {
-                for (int i = 0; i < myReader.FieldCount; i++)
+                for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                 {
-                    Columnas.Add(myReader.GetName(i).ToString());
+                    vTableColumns.Add(vMSSQLDataReader.GetName(i).ToString());
                 }
-                connection.Close();
-                for (int i = 0; i < Columnas.Count; i++)
+                vMSSQLConnection.Close();
+                for (int vColumnIndex = 0; vColumnIndex < vTableColumns.Count; vColumnIndex++)
                 {
-                    connection.Open();
-                    myCommand = new SqlCommand("select * from INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as s where s.CONSTRAINT_NAME like '%FK_%' and s.TABLE_NAME = '" + tablename + "' and s.COLUMN_NAME = '" + Columnas[i] + "';", connection);
-                    myReader = myCommand.ExecuteReader();
-                    while (myReader.Read())
+                    vMSSQLConnection.Open();
+                    vMSSQLCommand = new SqlCommand(string.Format(MyDBManager.Constants.MSSQL_SELECT_SCHEMA_FKS, aTablename, vTableColumns[vColumnIndex]), vMSSQLConnection);
+                    vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
+                    while (vMSSQLDataReader.Read())
                     {
-                        if (myReader["COLUMN_NAME"].ToString() != "")
+                        if (vMSSQLDataReader["COLUMN_NAME"].ToString() != "")
                         {
-                            FKS.Add(myReader["COLUMN_NAME"].ToString());
+                            vTableFKs.Add(vMSSQLDataReader["COLUMN_NAME"].ToString());
                         }
                     }
-                    connection.Close();
+                    vMSSQLConnection.Close();
                 }
-                for (int i = 0; i < Columnas.Count; i++)
+                for (int vColumnIndex = 0; vColumnIndex < vTableColumns.Count; vColumnIndex++)
                 {
-                    connection.Open();
-                    myCommand = new SqlCommand("select * from INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as s where s.CONSTRAINT_NAME like '%PK_%' and s.TABLE_NAME = '" + tablename + "' and s.COLUMN_NAME = '" + Columnas[i] + "';", connection);
-                    myReader = myCommand.ExecuteReader();
-                    while (myReader.Read())
+                    vMSSQLConnection.Open();
+                    vMSSQLCommand = new SqlCommand(string.Format(MyDBManager.Constants.MSSQL_SELECT_SCHEMA_PKS, aTablename, vTableColumns[vColumnIndex]), vMSSQLConnection);
+                    vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
+                    while (vMSSQLDataReader.Read())
                     {
-                        if (myReader["COLUMN_NAME"].ToString() != "")
+                        if (vMSSQLDataReader["COLUMN_NAME"].ToString() != "")
                         {
-                            PKS.Add(myReader["COLUMN_NAME"].ToString());
+                            vTablePKs.Add(vMSSQLDataReader["COLUMN_NAME"].ToString());
                         }
                     }
-                    connection.Close();
+                    vMSSQLConnection.Close();
                 }
-                connection.Open();
-                myCommand = new SqlCommand("select '  ['+column_name+'] ' + data_type + coalesce('('+cast(character_maximum_length as varchar)+')','') + ' ' + case when exists ( select id from syscolumns where object_name(id)='" + tablename + "' and name=column_name and columnproperty(id,name,'IsIdentity') = 1 ) then 'IDENTITY(' + cast(ident_seed('" + tablename + "') as varchar) + ',' + cast(ident_incr('" + tablename + "') as varchar) + ')' else '' end  + ' ' + ( case when IS_NULLABLE = 'No' then 'NOT ' else '' end ) + 'NULL ' + coalesce('DEFAULT '+COLUMN_DEFAULT,'') + ',' as col from information_schema.columns where table_name = '" + tablename + "' order by ordinal_position;", connection);
-                myReader = myCommand.ExecuteReader();
-                while (myReader.Read())
+                vMSSQLConnection.Open();
+                vMSSQLCommand = new SqlCommand(string.Format(MyDBManager.Constants.MSSQL_SELECT_SCHEMA_TYPES, aTablename), vMSSQLConnection);
+                vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
+                while (vMSSQLDataReader.Read())
                 {
-                    if (myReader["col"].ToString() != "")
+                    if (vMSSQLDataReader["col"].ToString() != "")
                     {
-                        Types.Add(myReader["col"].ToString());
+                        vTableTypes.Add(vMSSQLDataReader["col"].ToString());
                     }
                 }
-                connection.Close();
-                for (int i = 0; i < Types.Count; i++)
+                vMSSQLConnection.Close();
+                for (int i = 0; i < vTableTypes.Count; i++)
                 {
-                    response += Types[i].ToString() + " ";
+                    vDDLResult += vTableTypes[i].ToString() + " ";
                 }
-                for (int i = 0; i < PKS.Count; i++)
+                for (int i = 0; i < vTablePKs.Count; i++)
                 {
-                    response += "PRIMARY KEY (" + PKS[i].ToString() + ") ";
+                    vDDLResult += "PRIMARY KEY (" + vTablePKs[i].ToString() + ") ";
                 }
-                for (int i = 0; i < FKS.Count; i++)
+                for (int i = 0; i < vTableFKs.Count; i++)
                 {
-                    connection.Open();
-                    myCommand = new SqlCommand("select 'CONSTRAINT ['+ c1.CONSTRAINT_NAME +'] FOREING KEY (['+c1.COLUMN_NAME+']) REFERENCES ['+ c2.TABLE_SCHEMA+'].['+c2.TABLE_NAME+'] (['+c2.COLUMN_NAME+'])' as Cons from INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c1,INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as c2, INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS as r where c1.CONSTRAINT_NAME = r.CONSTRAINT_NAME and r.UNIQUE_CONSTRAINT_NAME = c2.CONSTRAINT_NAME and c1.COLUMN_NAME = '" + FKS[i].ToString() + "';", connection);
-                    myReader = myCommand.ExecuteReader();
-                    while (myReader.Read())
+                    vMSSQLConnection.Open();
+                    vMSSQLCommand = new SqlCommand(string.Format(MyDBManager.Constants.MSSQL_SELECT_SCHEMA_CONSTRAINTS, vTableFKs[i].ToString()), vMSSQLConnection);
+                    vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
+                    while (vMSSQLDataReader.Read())
                     {
-                        if (myReader["Cons"].ToString() != "")
+                        if (vMSSQLDataReader["Cons"].ToString() != "")
                         {
-                            response += (myReader["Cons"].ToString()) + "";
+                            vDDLResult += (vMSSQLDataReader["Cons"].ToString()) + "";
                         }
                     }
-                    connection.Close();
+                    vMSSQLConnection.Close();
                 }
             }
-            return response;
+            return vDDLResult;
 
         }
         [WebMethod]
 
-        public string getViewDDL(string user, string database, string password, string viewName)
+        public string getViewDDL(string aUser, string aDataBase, string aPassword, string aViewName)
         {
-            string command = "select m.definition from sys.sql_modules as m, sys.objects as o where o.object_id = m.object_id and o.name = '" + viewName + "';";
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            string response = "";
-            SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
-            SqlCommand myCommand;
-            SqlDataReader myReader;
-            connection.Open();
-            myCommand = new SqlCommand(command, connection);
-            myReader = myCommand.ExecuteReader();
-            while (myReader.Read())
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+
+            string vDDLResult = "";
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
+            vMSSQLConnection.Open();
+            vMSSQLCommand = new SqlCommand(string.Format(MyDBManager.Constants.MSSQL_SELECT_VIEW_DDL, aViewName), vMSSQLConnection);
+            vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
+            while (vMSSQLDataReader.Read())
             {
-                response += myReader["definition"].ToString();
+                vDDLResult += vMSSQLDataReader["definition"].ToString();
             }
-            return response;
+            return vDDLResult;
 
         }
         [WebMethod]
-        public string getExecPlan(string user, string database, string password, string script)
+        public string getExecPlan(string aUser, string aDataBase, string aPassword, string aCommand)
         {
-            string command = "set SHOWPLAN_TEXT on";
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            string response = "";
-            SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
-            SqlCommand myCommand;
-            SqlDataReader myReader;
-            connection.Open();
-            myCommand = new SqlCommand(command, connection);
-            myCommand.ExecuteNonQuery();
-            myCommand = new SqlCommand("" + script + ";", connection);
-            myReader = myCommand.ExecuteReader();
-            myReader.NextResult();
-            while (myReader.Read())
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+
+            string vDDLResponse = "";
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
+            vMSSQLConnection.Open();
+            vMSSQLCommand = new SqlCommand(MyDBManager.Constants.MSSQL_SHOW_PLAN_ON, vMSSQLConnection);
+            vMSSQLCommand.ExecuteNonQuery();
+            vMSSQLCommand = new SqlCommand("" + aCommand + ";", vMSSQLConnection);
+            vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
+            vMSSQLDataReader.NextResult();
+            while (vMSSQLDataReader.Read())
             {
-                for (int i = 0; i < myReader.FieldCount; i++)
+                for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                 {
-                    response += myReader[i].ToString();
+                    vDDLResponse += vMSSQLDataReader[i].ToString();
                 }
             }
-            connection.Close();
-            connection.Open();
-            myCommand = new SqlCommand("set SHOWPLAN_TEXT off", connection);
-            myCommand.ExecuteNonQuery();
-            connection.Close();
+            vMSSQLConnection.Close();
+            vMSSQLConnection.Open();
+            vMSSQLCommand = new SqlCommand(MyDBManager.Constants.MSSQL_SHOW_PLAN_OFF, vMSSQLConnection);
+            vMSSQLCommand.ExecuteNonQuery();
+            vMSSQLConnection.Close();
 
-            return response;
+            return vDDLResponse;
         }
 
         [WebMethod]
-        public string getDBFile(string user, string database, string password, string DBname)
+        public string getDBFile(string aUser, string aDataBase, string aPassword, string aDBName)
         {
-            string command = "select  f.physical_name as URL from sys.database_files f where  f.name = '" + DBname + "'";
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            string response = "";
-            SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
-            SqlCommand myCommand;
-            SqlDataReader myReader;
-            connection.Open();
-            myCommand = new SqlCommand(command, connection);
-            myReader = myCommand.ExecuteReader();
-            while (myReader.Read())
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+
+            string vDBFile = "";
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
+            vMSSQLConnection.Open();
+            vMSSQLCommand = new SqlCommand(string.Format(MyDBManager.Constants.MSSQL_SELECT_DB_FILE, aDBName), vMSSQLConnection);
+            vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
+            while (vMSSQLDataReader.Read())
             {
-                response = myReader["URL"].ToString();
+                vDBFile = vMSSQLDataReader["URL"].ToString();
             }
-            connection.Close();
-            return response;
+            vMSSQLConnection.Close();
+            return vDBFile;
         }
         [WebMethod]
-        public List<string> getSchemaData(string user, string database, string password)
+        public List<string> getSchemaData(string aUser, string aDataBase, string aPassword)
         {
-            string command = "EXEC sp_spaceused null, false";
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
-            SqlCommand myCommand;
-            SqlDataReader myReader;
-            connection.Open();
-            myCommand = new SqlCommand(command, connection);
-            myReader = myCommand.ExecuteReader();
-            List<string> response = new List<string>();
-            string fila1 = "";
-            string fila2 = "";
-            while (myReader.Read())
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
+            vMSSQLConnection.Open();
+            vMSSQLCommand = new SqlCommand(MyDBManager.Constants.MSSQL_SCHEMA_DATA, vMSSQLConnection);
+            vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
+            List<string> vSchemaData = new List<string>();
+            string vStringRow = "";
+            string vStringRow2 = "";
+            while (vMSSQLDataReader.Read())
             {
-                fila1 += myReader["database_name"] + " ";
-                fila1 += myReader["database_size"] + " ";
-                fila1 += myReader[2] + " ";
+                vStringRow += vMSSQLDataReader["database_name"] + " ";
+                vStringRow += vMSSQLDataReader["database_size"] + " ";
+                vStringRow += vMSSQLDataReader[2] + " ";
             }
-            myReader.NextResult();
-            while (myReader.Read())
+            vMSSQLDataReader.NextResult();
+            while (vMSSQLDataReader.Read())
             {
-                fila2 += myReader["reserved"] + " ";
-                fila2 += myReader["data"] + " ";
-                fila2 += myReader["index_size"] + " ";
-                fila2 += myReader["unused"] + " ";
+                vStringRow2 += vMSSQLDataReader["reserved"] + " ";
+                vStringRow2 += vMSSQLDataReader["data"] + " ";
+                vStringRow2 += vMSSQLDataReader["index_size"] + " ";
+                vStringRow2 += vMSSQLDataReader["unused"] + " ";
             }
-            response.Add(fila1);
-            response.Add(fila2);
-            return response;
+            vSchemaData.Add(vStringRow);
+            vSchemaData.Add(vStringRow2);
+            return vSchemaData;
 
         }
 
         [WebMethod]
-        public XmlDocument getInfoSesion(string user, string database, string password)
+        public XmlDocument getInfoSesion(string aUser, string aDataBase, string aPassword)
         {
-            string command = "select * from sys.dm_exec_sessions;";
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-            SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            SqlCommand myCommand;
-            SqlDataReader myReader;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new SqlCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vMSSQLConnection.Open();
+                vMSSQLCommand = new SqlCommand(MyDBManager.Constants.MSSQL_SELECT_SESSION_INFO, vMSSQLConnection);
+                vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1830,12 +1833,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1848,74 +1851,74 @@ namespace MyDBManager
 
             try
             {
-                if (myReader.HasRows)
+                if (vMSSQLDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement("columns");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement("name");
-                        colName.InnerText = myReader.GetName(i);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
+                        colName.InnerText = vMSSQLDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
                     rootNode.AppendChild(colNames);
                 }
-                while (myReader.Read())
+                while (vMSSQLDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement("row");
-                    for (int i = 0; i < myReader.FieldCount; i++)
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
                     {
-                        XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
+                        XmlNode grid = xmlDoc.CreateElement(vMSSQLDataReader.GetName(i));
                         string field = "";
-                        string nameType = myReader.GetFieldType(i).Name;
+                        string nameType = vMSSQLDataReader.GetFieldType(i).Name;
                         switch (nameType)
                         {
                             case "Int16":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt16(i);
+                                    field = "" + vMSSQLDataReader.GetInt16(i);
                                 break;
                             case "Int32":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt32(i);
+                                    field = "" + vMSSQLDataReader.GetInt32(i);
                                 break;
                             case "Int64":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetInt64(i);
+                                    field = "" + vMSSQLDataReader.GetInt64(i);
                                 break;
                             case "String":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = myReader.GetString(i);
+                                    field = vMSSQLDataReader.GetString(i);
                                 break;
                             case "Boolean":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetBoolean(i);
+                                    field = "" + vMSSQLDataReader.GetBoolean(i);
                                 break;
                             case "Byte":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetByte(i);
+                                    field = "" + vMSSQLDataReader.GetByte(i);
                                 break;
                             case "DateTime":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetDateTime(i);
+                                    field = "" + vMSSQLDataReader.GetDateTime(i);
                                 break;
                             case "Char":
-                                if (myReader.IsDBNull(i))
+                                if (vMSSQLDataReader.IsDBNull(i))
                                     field = "NULL";
                                 else
-                                    field = "" + myReader.GetChar(i);
+                                    field = "" + vMSSQLDataReader.GetChar(i);
                                 break;
                         }
                         grid.InnerText = field;
@@ -1927,12 +1930,12 @@ namespace MyDBManager
             }
             catch (SqlException ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1944,12 +1947,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement("error");
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement("source");
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement("message");
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1961,40 +1964,44 @@ namespace MyDBManager
             }
             finally
             {
-                myReader.Close();
-                connection.Close();
+                vMSSQLDataReader.Close();
+                vMSSQLConnection.Close();
             }
             return xmlDoc;
         }
 
         [WebMethod]
-        public bool isLogin(string user, string database, string password)
+        public bool isLogin(string aUser, string aDataBase, string aPassword)
         {
-            string command = "SELECT * FROM sys.tables";
-            string connectionString = "Data Source=localhost;Initial Catalog=" + database + ";User Id=" + user + ";Password=" + password + ";";
-           
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
 
 
-            SqlConnection connection = new SqlConnection();
-            connection.ConnectionString = connectionString;
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement("query");
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
-            SqlCommand myCommand;
-            SqlDataReader myReader;
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
 
             try
             {
-                connection.Open();
-                myCommand = new SqlCommand(command, connection);
-                myReader = myCommand.ExecuteReader();
+                vMSSQLConnection.Open();
+                vMSSQLCommand = new SqlCommand(MyDBManager.Constants.MSSQL_SELECT_SYSTABLES, vMSSQLConnection);
+                vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
                 return true;
             }
             catch (SqlException ex)
             {
                 return false;
             }
+        }
+
+        //CLASSMETHODS
+        public void prepareMSSQLConnectionString(string aUser, string aPassword, string aDataBase)
+        {
+            vConnectionString = String.Format(MyDBManager.Constants.MSSQL_CONNECTION_STRING, aDataBase, aUser, aPassword);
         }
     }
 }

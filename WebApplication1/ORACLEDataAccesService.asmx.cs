@@ -31,7 +31,7 @@ namespace MyDBManager
             OracleConnection connection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand myCommand;
             OracleDataReader myReader;
@@ -45,12 +45,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -62,12 +62,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -82,10 +82,10 @@ namespace MyDBManager
             {
                 if (myReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
                     for (int i = 0; i < myReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
                         colName.InnerText = myReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
@@ -93,7 +93,7 @@ namespace MyDBManager
                 }
                 while (myReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
                     for (int i = 0; i < myReader.FieldCount; i++)
                     {
                         XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
@@ -159,12 +159,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -176,12 +176,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -207,7 +207,7 @@ namespace MyDBManager
             OracleConnection connection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand myCommand;
             OracleCommand runPlan;
@@ -225,12 +225,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -242,12 +242,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -262,7 +262,7 @@ namespace MyDBManager
             {
                 while (myReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
                     for (int i = 0; i < myReader.FieldCount; i++)
                     {
                         XmlNode grid = xmlDoc.CreateElement(myReader.GetName(i));
@@ -334,12 +334,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -351,12 +351,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -382,7 +382,7 @@ namespace MyDBManager
             OracleConnection connection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand vOracleCommand;
             OracleDataReader vOracleDataReader;
@@ -396,12 +396,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -413,12 +413,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -433,10 +433,10 @@ namespace MyDBManager
             {
                 if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
                         colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
@@ -444,7 +444,7 @@ namespace MyDBManager
                 }
                 while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
                         XmlNode grid = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_DDL);
@@ -516,12 +516,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -533,12 +533,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -565,7 +565,7 @@ namespace MyDBManager
             OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand vOracleCommand;
             OracleDataReader vOracleDataReader;
@@ -578,12 +578,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -595,12 +595,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -615,10 +615,10 @@ namespace MyDBManager
             {
                 if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
                         colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
@@ -626,7 +626,7 @@ namespace MyDBManager
                 }
                 while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
                         XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
@@ -692,12 +692,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -709,12 +709,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -741,7 +741,7 @@ namespace MyDBManager
             OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand vOracleCommand;
             OracleDataReader vOracleDataReader;
@@ -754,12 +754,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -771,12 +771,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -791,10 +791,10 @@ namespace MyDBManager
             {
                 if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
                         colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
@@ -802,7 +802,7 @@ namespace MyDBManager
                 }
                 while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
                         XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
@@ -868,12 +868,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -885,12 +885,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -917,7 +917,7 @@ namespace MyDBManager
             OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand vOracleCommand;
             OracleDataReader vOracleDataReader;
@@ -930,12 +930,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -947,12 +947,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -967,10 +967,10 @@ namespace MyDBManager
             {
                 if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
                         colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
@@ -978,7 +978,7 @@ namespace MyDBManager
                 }
                 while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
                         XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
@@ -1044,12 +1044,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1061,12 +1061,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1093,7 +1093,7 @@ namespace MyDBManager
             OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand vOracleCommand;
             OracleDataReader vOracleDataReader;
@@ -1106,12 +1106,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1123,12 +1123,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1143,10 +1143,10 @@ namespace MyDBManager
             {
                 if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
                         colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
@@ -1154,7 +1154,7 @@ namespace MyDBManager
                 }
                 while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
                         XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
@@ -1220,12 +1220,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1237,12 +1237,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1269,7 +1269,7 @@ namespace MyDBManager
             OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand vOracleCommand;
             OracleDataReader vOracleDataReader;
@@ -1282,12 +1282,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1299,12 +1299,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1319,10 +1319,10 @@ namespace MyDBManager
             {
                 if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
                         colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
@@ -1330,7 +1330,7 @@ namespace MyDBManager
                 }
                 while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
                         XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
@@ -1396,12 +1396,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1413,12 +1413,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1445,7 +1445,7 @@ namespace MyDBManager
             OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand vOracleCommand;
             OracleDataReader vOracleDataReader;
@@ -1458,12 +1458,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1475,12 +1475,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1495,10 +1495,10 @@ namespace MyDBManager
             {
                 if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
                         colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
@@ -1506,7 +1506,7 @@ namespace MyDBManager
                 }
                 while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
                         XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
@@ -1572,12 +1572,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1589,12 +1589,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1621,7 +1621,7 @@ namespace MyDBManager
             OracleConnection connection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand vOracleCommand;
             OracleDataReader vOracleDataReader;
@@ -1634,12 +1634,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1651,12 +1651,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1671,10 +1671,10 @@ namespace MyDBManager
             {
                 if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
                         colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
@@ -1682,7 +1682,7 @@ namespace MyDBManager
                 }
                 while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
                         XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
@@ -1748,12 +1748,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1765,12 +1765,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1797,7 +1797,7 @@ namespace MyDBManager
             OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand vOracleCommand;
             OracleDataReader vOracleDataReader;
@@ -1810,12 +1810,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1827,12 +1827,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1847,10 +1847,10 @@ namespace MyDBManager
             {
                 if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
                         colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
@@ -1858,7 +1858,7 @@ namespace MyDBManager
                 }
                 while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
                         XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
@@ -1924,12 +1924,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1941,12 +1941,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -1973,7 +1973,7 @@ namespace MyDBManager
             OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand vOracleCommand;
             OracleDataReader vOracleDataReader;
@@ -1986,12 +1986,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -2003,12 +2003,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -2023,10 +2023,10 @@ namespace MyDBManager
             {
                 if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
                         colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
@@ -2034,7 +2034,7 @@ namespace MyDBManager
                 }
                 while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
                         XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
@@ -2100,12 +2100,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -2117,12 +2117,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -2149,7 +2149,7 @@ namespace MyDBManager
             OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand vOracleCommand;
             OracleDataReader vOracleDataReader;
@@ -2162,12 +2162,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -2179,12 +2179,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -2199,10 +2199,10 @@ namespace MyDBManager
             {
                 if (vOracleDataReader.HasRows)
                 {
-                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_COLUMNS);
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
-                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_NAME);
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
                         colName.InnerText = vOracleDataReader.GetName(i);
                         colNames.AppendChild(colName);
                     }
@@ -2210,7 +2210,7 @@ namespace MyDBManager
                 }
                 while (vOracleDataReader.Read())
                 {
-                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ROW);
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
                     for (int i = 0; i < vOracleDataReader.FieldCount; i++)
                     {
                         XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
@@ -2276,12 +2276,12 @@ namespace MyDBManager
             }
             catch (OracleException ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -2293,12 +2293,12 @@ namespace MyDBManager
             }
             catch (Exception ex)
             {
-                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_ERROR);
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
 
-                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_SOURCE);
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
                 source.InnerText = ex.Source;
 
-                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_MESSAGE);
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
                 source.InnerText = ex.Message;
 
                 error.AppendChild(source);
@@ -2325,7 +2325,7 @@ namespace MyDBManager
             OracleConnection vOracleconnection = new OracleConnection(vConnectionString);
 
             XmlDocument xmlDoc = new XmlDocument();
-            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.ORACLE_QUERY);
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
             xmlDoc.AppendChild(rootNode);
             OracleCommand vOracleCommand;
             OracleDataReader vOracleDatReader;
