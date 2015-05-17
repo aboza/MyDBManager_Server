@@ -23,6 +23,9 @@ namespace MyDBManager
         string vCommandString;
 
         //WEBMETHODS
+        /*ExecCommand: Ejecuta un comando o script PL/SQL ya sea DDL o DML retornando el resultado
+         * de la consulta por medio de un XML
+         */
         [WebMethod]
         public XmlDocument execCommand(string aUser, string aDataBaseSID, string aPassword, string aCommand)
         {
@@ -199,6 +202,8 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*ExecPlan: ejecutamos el show plan para un comando especifico
+         */
         [WebMethod]
         public XmlDocument execPlan(string aUser, string aDataBaseSID, string aPassword, string aCommand)
         {
@@ -374,6 +379,8 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*getMetadata: Obtenemos el DDL para un objeto expecifico de la Base de Datos
+         */
         [WebMethod]
         public XmlDocument getMetadata(string aUser, string aDataBaseSID, string aPassword, string aMetaDataType, string aTableName)
         {
@@ -390,7 +397,7 @@ namespace MyDBManager
             try
             {
                 connection.Open();
-                vOracleCommand = new OracleCommand(string.Format(MyDBManager.Constants.ORACLE_SELECT_METADATA,aMetaDataType,aTableName,aUser), connection);
+                vOracleCommand = new OracleCommand(string.Format(MyDBManager.Constants.ORACLE_SELECT_METADATA, aMetaDataType, aTableName, aUser), connection);
                 vOracleDataReader = vOracleCommand.ExecuteReader();
 
             }
@@ -556,6 +563,9 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*getFunctions: Obtiene las funciones presentes para la instancia de Base de Datos 
+         * seleccionada.
+         */
         [WebMethod]
         public XmlDocument getFunctions(string aUser, string aDataBaseSID, string aPassword)
         {
@@ -732,6 +742,9 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*getProcedure:Obtiene la informacion de los procedimientos presentes para 
+         * la instancia de Base de Datos seleccionada
+         */
         [WebMethod]
         public XmlDocument getProcedures(string aUser, string aDataBaseSID, string aPassword)
         {
@@ -908,6 +921,9 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*getSynonyms: Obtiene la informacion de los sinonimos presentes para la instancia de Base de Datos
+         * seleccionada
+         */
         [WebMethod]
         public XmlDocument getSynonyms(string aUser, string aDataBaseSID, string aPassword)
         {
@@ -1084,6 +1100,9 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*getViews: Obtiene la informacion de las vistas presentes para la instancia
+         * de Base de Datos seleccionada
+         */
         [WebMethod]
         public XmlDocument getViews(string aUser, string aDataBaseSID, string aPassword)
         {
@@ -1260,6 +1279,9 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*getIndexes: Obtiene la informacion de los indices presentes para la
+        * instancia de Base de Datos seleccionada
+        */
         [WebMethod]
         public XmlDocument getIndexes(string aUser, string aDataBaseSID, string aPassword)
         {
@@ -1436,6 +1458,9 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*getTriggers: Obtiene la informacion de los triggers presentes para la instancia
+         * de Base de Datos seleccionada
+         */
         [WebMethod]
         public XmlDocument getTriggers(string aUser, string aDataBaseSID, string aPassword)
         {
@@ -1612,6 +1637,9 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*getTables: Obtiene la informacion de las tablas presentes para
+         * la instancia de Base de Datos seleccionada
+         */
         [WebMethod]
         public XmlDocument getTables(string aUser, string aDataBaseSID, string aPassword)
         {
@@ -1788,6 +1816,9 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*getTableSpaces: Obtiene la informacion de los tablespaces
+         * retornando el resultado en forma de XML
+         */
         [WebMethod]
         public XmlDocument getTablespaces(string aUser, string aDataBaseSID, string aPassword)
         {
@@ -1964,6 +1995,9 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*getProcedure:Obtiene la informacion de los packages presentes para 
+         * la instancia de Base de Datos seleccionada
+         */
         [WebMethod]
         public XmlDocument getPackages(string aUser, string aDataBaseSID, string aPassword)
         {
@@ -2140,6 +2174,9 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*getInfoSession: Obtiene la informacion de las sesiones activas en la instancia
+         * de Base de Datos seleccionada
+         */
         [WebMethod]
         public XmlDocument getInfoSesion(string aUser, string aDataBaseSID, string aPassword)
         {
@@ -2344,11 +2381,14 @@ namespace MyDBManager
         }
 
         //CLASSMETHODS
+        /*prepareOracleConnectionString: prepara el string de conexion para una Base de Datos ORACLE
+         * sin necesidad de utilizar los TNSNAMES
+        */
         public void prepareOracleConnectionString(string aUser, string aPassword, string aDataBaseSID)
         {
 
             vConnectionString = String.Format(MyDBManager.Constants.ORACLE_CONNECTION_STRING, aDataBaseSID, aUser, aPassword);
-            //SYS AND SYSTEM USER NEED SYSDBA PRIVILIGES
+            //SYS AND SYSTEM USER necesitan privilegios de SYSDBA, esto para acceso a la CDB
             if ((aUser == MyDBManager.Constants.ORACLE_SYS_USER) || (aUser == MyDBManager.Constants.ORACLE_SYSTEM_USER))
             {
                 vConnectionString = string.Concat(vConnectionString, MyDBManager.Constants.ORACLE_DBA_PRIVILEGE_SYSDBA);
