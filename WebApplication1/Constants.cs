@@ -19,6 +19,8 @@ namespace MyDBManager
         //MSSQL CONSTANTS
         public static string MSSQL_CONNECTION_STRING = "Data Source=localhost;Initial Catalog= {0};User Id= {1};Password= {2};";
         //consultas
+        public static string MSSQL_SELECT_USERS = "SELECT * FROM sys.database_principals";
+
         public static string MSSQL_SELECT_SYSTABLES = "SELECT * FROM sys.tables";
         public static string MSSQL_SELECT_FUNCTIONS = "SELECT * FROM sys.objects WHERE type_desc LIKE '%FUNCTION%';";
         public static string MSSQL_SELECT_TABLESPACES = "SELECT * FROM sys.databases;";
