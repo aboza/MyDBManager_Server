@@ -19,7 +19,6 @@ namespace MyDBManager
         string vConnectionString;
         string vCommandString;
         //WebMethods
-
         [WebMethod]
         public XmlDocument getUsers (string aUser, string aDataBase, string aPassword)
         {
