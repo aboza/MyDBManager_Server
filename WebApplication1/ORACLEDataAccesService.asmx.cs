@@ -24,6 +24,181 @@ namespace MyDBManager
 
         //WEBMETHODS
         [WebMethod]
+        public XmlDocument getUsers (string aUser, string aDataBaseSID, string aPassword)
+        {
+            prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);
+            string vOracleCommandString = MyDBManager.Constants.ORACLE_SELECT_USERS;
+
+            OracleConnection vOracleConnection = new OracleConnection(vConnectionString);
+
+            XmlDocument xmlDoc = new XmlDocument();
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
+            xmlDoc.AppendChild(rootNode);
+            OracleCommand vOracleCommand;
+            OracleDataReader vOracleDataReader;
+
+            try
+            {
+                vOracleConnection.Open();
+                vOracleCommand = new OracleCommand(vOracleCommandString, vOracleConnection);
+                vOracleDataReader = vOracleCommand.ExecuteReader();
+            }
+            catch (OracleException ex)
+            {
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
+
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
+                source.InnerText = ex.Source;
+
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
+                source.InnerText = ex.Message;
+
+                error.AppendChild(source);
+                error.AppendChild(message);
+
+                rootNode.AppendChild(error);
+
+                return xmlDoc;
+            }
+            catch (Exception ex)
+            {
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
+
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
+                source.InnerText = ex.Source;
+
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
+                source.InnerText = ex.Message;
+
+                error.AppendChild(source);
+                error.AppendChild(message);
+
+                rootNode.AppendChild(error);
+
+                return xmlDoc;
+            }
+
+            try
+            {
+                if (vOracleDataReader.HasRows)
+                {
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
+                    {
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
+                        colName.InnerText = vOracleDataReader.GetName(i);
+                        colNames.AppendChild(colName);
+                    }
+                    rootNode.AppendChild(colNames);
+                }
+                while (vOracleDataReader.Read())
+                {
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
+                    for (int i = 0; i < vOracleDataReader.FieldCount; i++)
+                    {
+                        XmlNode grid = xmlDoc.CreateElement(vOracleDataReader.GetName(i));
+                        string field = "";
+                        string nameType = vOracleDataReader.GetFieldType(i).Name;
+                        switch (nameType)
+                        {
+                            case "Int16":
+                                if (vOracleDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = "" + vOracleDataReader.GetInt16(i);
+                                break;
+                            case "Int32":
+                                if (vOracleDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = "" + vOracleDataReader.GetInt32(i);
+                                break;
+                            case "Int64":
+                                if (vOracleDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = "" + vOracleDataReader.GetInt64(i);
+                                break;
+                            case "String":
+                                if (vOracleDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = vOracleDataReader.GetString(i);
+                                break;
+                            case "Boolean":
+                                if (vOracleDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = "" + vOracleDataReader.GetBoolean(i);
+                                break;
+                            case "Byte":
+                                if (vOracleDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = "" + vOracleDataReader.GetByte(i);
+                                break;
+                            case "DateTime":
+                                if (vOracleDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = "" + vOracleDataReader.GetDateTime(i);
+                                break;
+                            case "Char":
+                                if (vOracleDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = "" + vOracleDataReader.GetChar(i);
+                                break;
+                        }
+                        grid.InnerText = field;
+                        row.AppendChild(grid);
+                        rootNode.AppendChild(row);
+                    }
+                }
+
+            }
+            catch (OracleException ex)
+            {
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
+
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
+                source.InnerText = ex.Source;
+
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
+                source.InnerText = ex.Message;
+
+                error.AppendChild(source);
+                error.AppendChild(message);
+
+                rootNode.AppendChild(error);
+
+                return xmlDoc;
+            }
+            catch (Exception ex)
+            {
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
+
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
+                source.InnerText = ex.Source;
+
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
+                source.InnerText = ex.Message;
+
+                error.AppendChild(source);
+                error.AppendChild(message);
+
+                rootNode.AppendChild(error);
+
+                return xmlDoc;
+            }
+            finally
+            {
+                vOracleDataReader.Close();
+                vOracleConnection.Close();
+            }
+            return xmlDoc;
+        }
+        [WebMethod]
         public XmlDocument execCommand(string aUser, string aDataBaseSID, string aPassword, string aCommand)
         {
             prepareOracleConnectionString(aUser, aPassword, aDataBaseSID);

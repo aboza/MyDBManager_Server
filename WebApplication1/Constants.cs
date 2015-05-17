@@ -55,6 +55,7 @@ namespace MyDBManager
         public static string ORACLE_SYS_USER = "SYS";
         public static string ORACLE_SYSTEM_USER = "SYSTEM";
         //consultas
+        public static string ORACLE_SELECT_USERS = "select * from dba_users";
         public static string ORACLE_SELECT_DUAL = "SELECT * FROM DUAL";
         public static string ORACLE_EXPLAIN_PLAN = "EXPLAIN PLAN FOR {0}";
         public static string ORACLE_SELECT_EXPLAIN_PLAN_INFO = "SELECT id, operation, cardinality, bytes, cost, time, object_owner" +
