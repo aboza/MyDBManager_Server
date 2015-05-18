@@ -24,7 +24,7 @@ namespace MyDBManager
          * retornando la informacion en forma de un XML
          */
         [WebMethod]
-<<<<<<< HEAD
+
         public XmlDocument getPrivilege(string aUser, string aDataBase, string aPassword)
         {
             prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
