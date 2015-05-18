@@ -203,10 +203,7 @@ namespace MyDBManager
 
 
         [WebMethod]
-        public XmlDocument getUsers (string aUser, string aDataBase, string aPassword)
-=======
         public XmlDocument getUsers(string aUser, string aDataBase, string aPassword)
->>>>>>> origin/master
         {
             prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
 
