@@ -20,6 +20,7 @@ namespace MyDBManager
         public static string MSSQL_CONNECTION_STRING = "Data Source=localhost;Initial Catalog= {0};User Id= {1};Password= {2};";
         //consultas
         public static string MSSQL_SELECT_USERS = "SELECT * FROM sys.database_principals";
+        public static string MDSQL_PRIVILEGE = "SELECT * FROM sys.fn_my_permissions(default, 'DATABASE')";
 
         public static string MSSQL_SELECT_SYSTABLES = "SELECT * FROM sys.tables";
         public static string MSSQL_SELECT_FUNCTIONS = "SELECT * FROM sys.objects WHERE type_desc LIKE '%FUNCTION%';";
@@ -56,6 +57,7 @@ namespace MyDBManager
         public static string ORACLE_SYSTEM_USER = "SYSTEM";
         //consultas
         public static string ORACLE_SELECT_USERS = "select * from dba_users";
+        public static string ORACLE_PRIVILEGE = "select * from user_sys_privs";
         public static string ORACLE_SELECT_DUAL = "SELECT * FROM DUAL";
         public static string ORACLE_EXPLAIN_PLAN = "EXPLAIN PLAN FOR {0}";
         public static string ORACLE_SELECT_EXPLAIN_PLAN_INFO = "SELECT id, operation, cardinality, bytes, cost, time, object_owner" +

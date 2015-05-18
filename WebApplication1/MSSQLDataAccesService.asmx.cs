@@ -20,6 +20,184 @@ namespace MyDBManager
         string vCommandString;
         //WebMethods
         [WebMethod]
+        public XmlDocument getPrivilege(string aUser, string aDataBase, string aPassword)
+        {
+            prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
+
+            SqlConnection vMSSQLConnection = new SqlConnection();
+            vMSSQLConnection.ConnectionString = vConnectionString;
+
+            XmlDocument xmlDoc = new XmlDocument();
+            XmlNode rootNode = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_QUERY);
+            xmlDoc.AppendChild(rootNode);
+            SqlCommand vMSSQLCommand;
+            SqlDataReader vMSSQLDataReader;
+
+            try
+            {
+                vMSSQLConnection.Open();
+                vMSSQLCommand = new SqlCommand(MyDBManager.Constants.MDSQL_PRIVILEGE, vMSSQLConnection);
+                vMSSQLDataReader = vMSSQLCommand.ExecuteReader();
+            }
+            catch (SqlException ex)
+            {
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
+
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
+                source.InnerText = ex.Source;
+
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
+                source.InnerText = ex.Message;
+
+                error.AppendChild(source);
+                error.AppendChild(message);
+
+                rootNode.AppendChild(error);
+
+                return xmlDoc;
+            }
+            catch (Exception ex)
+            {
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
+
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
+                source.InnerText = ex.Source;
+
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
+                source.InnerText = ex.Message;
+
+                error.AppendChild(source);
+                error.AppendChild(message);
+
+                rootNode.AppendChild(error);
+
+                return xmlDoc;
+            }
+
+            try
+            {
+                if (vMSSQLDataReader.HasRows)
+                {
+                    XmlNode colNames = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_COLUMNS);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
+                    {
+                        XmlNode colName = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_NAME);
+                        colName.InnerText = vMSSQLDataReader.GetName(i);
+                        colNames.AppendChild(colName);
+                    }
+                    rootNode.AppendChild(colNames);
+                }
+                while (vMSSQLDataReader.Read())
+                {
+                    XmlNode row = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ROW);
+                    for (int i = 0; i < vMSSQLDataReader.FieldCount; i++)
+                    {
+                        XmlNode grid = xmlDoc.CreateElement(vMSSQLDataReader.GetName(i));
+                        string field = "";
+                        string nameType = vMSSQLDataReader.GetFieldType(i).Name;
+                        switch (nameType)
+                        {
+                            case "Int16":
+                                if (vMSSQLDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = "" + vMSSQLDataReader.GetInt16(i);
+                                break;
+                            case "Int32":
+                                if (vMSSQLDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = "" + vMSSQLDataReader.GetInt32(i);
+                                break;
+                            case "Int64":
+                                if (vMSSQLDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = "" + vMSSQLDataReader.GetInt64(i);
+                                break;
+                            case "String":
+                                if (vMSSQLDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = vMSSQLDataReader.GetString(i);
+                                break;
+                            case "Boolean":
+                                if (vMSSQLDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = "" + vMSSQLDataReader.GetBoolean(i);
+                                break;
+                            case "Byte":
+                                if (vMSSQLDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = "" + vMSSQLDataReader.GetByte(i);
+                                break;
+                            case "DateTime":
+                                if (vMSSQLDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = "" + vMSSQLDataReader.GetDateTime(i);
+                                break;
+                            case "Char":
+                                if (vMSSQLDataReader.IsDBNull(i))
+                                    field = "NULL";
+                                else
+                                    field = "" + vMSSQLDataReader.GetChar(i);
+                                break;
+                        }
+                        grid.InnerText = field;
+                        row.AppendChild(grid);
+                        rootNode.AppendChild(row);
+                    }
+                }
+
+            }
+            catch (SqlException ex)
+            {
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
+
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
+                source.InnerText = ex.Source;
+
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
+                source.InnerText = ex.Message;
+
+                error.AppendChild(source);
+                error.AppendChild(message);
+
+                rootNode.AppendChild(error);
+
+                return xmlDoc;
+            }
+            catch (Exception ex)
+            {
+                XmlNode error = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_ERROR);
+
+                XmlNode source = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_SOURCE);
+                source.InnerText = ex.Source;
+
+                XmlNode message = xmlDoc.CreateElement(MyDBManager.Constants.DATABASE_MESSAGE);
+                source.InnerText = ex.Message;
+
+                error.AppendChild(source);
+                error.AppendChild(message);
+
+                rootNode.AppendChild(error);
+
+                return xmlDoc;
+            }
+            finally
+            {
+                vMSSQLDataReader.Close();
+                vMSSQLConnection.Close();
+            }
+            return xmlDoc;
+        }
+
+
+
+        [WebMethod]
         public XmlDocument getUsers (string aUser, string aDataBase, string aPassword)
         {
             prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
