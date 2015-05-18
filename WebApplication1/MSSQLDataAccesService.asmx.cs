@@ -19,7 +19,12 @@ namespace MyDBManager
         string vConnectionString;
         string vCommandString;
         //WebMethods
+
+        /*getUsers: Obtiene la informacion de los usuarios de la instancia de Base de Datos
+         * retornando la informacion en forma de un XML
+         */
         [WebMethod]
+<<<<<<< HEAD
         public XmlDocument getPrivilege(string aUser, string aDataBase, string aPassword)
         {
             prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
@@ -199,6 +204,9 @@ namespace MyDBManager
 
         [WebMethod]
         public XmlDocument getUsers (string aUser, string aDataBase, string aPassword)
+=======
+        public XmlDocument getUsers(string aUser, string aDataBase, string aPassword)
+>>>>>>> origin/master
         {
             prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
 
@@ -373,6 +381,9 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*ExecCommand: Ejecuta un comando o script SQL ya sea DDL o DML retornando el resultado
+         * de la consulta por medio de un XML
+         */
         [WebMethod]
         public XmlDocument execCommand(string aUser, string aDataBase, string aPassword, string aCommand)
         {
@@ -550,6 +561,9 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*getFunctions: Obtiene las funciones presentes para la instancia de Base de Datos 
+         * seleccionada.
+         */
         [WebMethod]
         public XmlDocument getFunctions(string aUser, string aDataBase, string aPassword)
         {
@@ -725,6 +739,10 @@ namespace MyDBManager
             }
             return xmlDoc;
         }
+
+        /*getTableSpaces: Obtiene la informacion de las bases de datos
+         * retornando el resultado en forma de XML
+         */
         [WebMethod]
         public XmlDocument getTableSpaces(string aUser, string aDataBase, string aPassword)
         {
@@ -901,6 +919,9 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*getProcedure:Obtiene la informacion de los procedimientos presentes para 
+         * la instancia de Base de Datos seleccionada
+         */
         [WebMethod]
         public XmlDocument getProcedures(string aUser, string aDataBase, string aPassword)
         {
@@ -1076,6 +1097,10 @@ namespace MyDBManager
             }
             return xmlDoc;
         }
+
+        /*getSynonyms: Obtiene la informacion de los sinonimos presentes para la instancia de Base de Datos
+         * seleccionada
+         */
         [WebMethod]
         public XmlDocument getSynonyms(string aUser, string aDataBase, string aPassword)
         {
@@ -1251,6 +1276,10 @@ namespace MyDBManager
             }
             return xmlDoc;
         }
+
+        /*getViews: Obtiene la informacion de las vistas presentes para la instancia
+         * de Base de Datos seleccionada
+         */
         [WebMethod]
         public XmlDocument getViews(string aUser, string aDataBase, string aPassword)
         {
@@ -1426,6 +1455,10 @@ namespace MyDBManager
             }
             return xmlDoc;
         }
+
+        /*getIndexes: Obtiene la informacion de los indices presentes para la
+         * instancia de Base de Datos seleccionada
+         */
         [WebMethod]
         public XmlDocument getIndexes(string aUser, string aDataBase, string aPassword)
         {
@@ -1601,6 +1634,10 @@ namespace MyDBManager
             }
             return xmlDoc;
         }
+
+        /*getTriggers: Obtiene la informacion de los triggers presentes para la instancia
+         * de Base de Datos seleccionada
+         */
         [WebMethod]
         public XmlDocument getTriggers(string aUser, string aDataBase, string aPassword)
         {
@@ -1776,6 +1813,10 @@ namespace MyDBManager
             }
             return xmlDoc;
         }
+
+        /*getTables: Obtiene la informacion de las tablas presentes para
+         * la instancia de Base de Datos seleccionada
+         */
         [WebMethod]
         public XmlDocument getTables(string aUser, string aDataBase, string aPassword)
         {
@@ -1952,6 +1993,10 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*getTableDDL: Mediante 3 consultas creamos un string con la informacion necesaria para
+         * generar el DDL para una tabla especifica, el proceso concatena una serie de resultados
+         * para finalizar con el DDL resultado.
+         */
         [WebMethod]
         public string getTableDDL(string aUser, string aDataBase, string aPassword, string aTablename)
         {
@@ -1961,7 +2006,7 @@ namespace MyDBManager
             List<string> vTablePKs = new List<string>();
             List<string> vTableTypes = new List<string>();
 
-            string vDDLResult = "CREATE TABLE " + aTablename + " ( ";
+            string vDDLResult = "CREATE TABLE " + aTablename + " ( ";//Inicio del DDL
             SqlConnection vMSSQLConnection = new SqlConnection();
             vMSSQLConnection.ConnectionString = vConnectionString;
             SqlCommand vMSSQLCommand;
@@ -1976,7 +2021,7 @@ namespace MyDBManager
                     vTableColumns.Add(vMSSQLDataReader.GetName(i).ToString());
                 }
                 vMSSQLConnection.Close();
-                for (int vColumnIndex = 0; vColumnIndex < vTableColumns.Count; vColumnIndex++)
+                for (int vColumnIndex = 0; vColumnIndex < vTableColumns.Count; vColumnIndex++)//Obtenemos los FKs
                 {
                     vMSSQLConnection.Open();
                     vMSSQLCommand = new SqlCommand(string.Format(MyDBManager.Constants.MSSQL_SELECT_SCHEMA_FKS, aTablename, vTableColumns[vColumnIndex]), vMSSQLConnection);
@@ -1990,7 +2035,7 @@ namespace MyDBManager
                     }
                     vMSSQLConnection.Close();
                 }
-                for (int vColumnIndex = 0; vColumnIndex < vTableColumns.Count; vColumnIndex++)
+                for (int vColumnIndex = 0; vColumnIndex < vTableColumns.Count; vColumnIndex++)//Obtenemos los PKs
                 {
                     vMSSQLConnection.Open();
                     vMSSQLCommand = new SqlCommand(string.Format(MyDBManager.Constants.MSSQL_SELECT_SCHEMA_PKS, aTablename, vTableColumns[vColumnIndex]), vMSSQLConnection);
@@ -2011,7 +2056,7 @@ namespace MyDBManager
                 {
                     if (vMSSQLDataReader["col"].ToString() != "")
                     {
-                        vTableTypes.Add(vMSSQLDataReader["col"].ToString());
+                        vTableTypes.Add(vMSSQLDataReader["col"].ToString());//agregamos las columnas
                     }
                 }
                 vMSSQLConnection.Close();
@@ -2021,7 +2066,7 @@ namespace MyDBManager
                 }
                 for (int i = 0; i < vTablePKs.Count; i++)
                 {
-                    vDDLResult += "PRIMARY KEY (" + vTablePKs[i].ToString() + ") ";
+                    vDDLResult += "PRIMARY KEY (" + vTablePKs[i].ToString() + ") ";//creamos el DDL para el primary Key
                 }
                 for (int i = 0; i < vTableFKs.Count; i++)
                 {
@@ -2032,17 +2077,20 @@ namespace MyDBManager
                     {
                         if (vMSSQLDataReader["Cons"].ToString() != "")
                         {
-                            vDDLResult += (vMSSQLDataReader["Cons"].ToString()) + "";
+                            vDDLResult += (vMSSQLDataReader["Cons"].ToString()) + "";//agregamos los constraints
                         }
                     }
                     vMSSQLConnection.Close();
                 }
             }
-            return vDDLResult;
+            return vDDLResult;// al final tenemos un string con el DDL completo
 
         }
-        [WebMethod]
 
+        /*getViewDDL: Obtenemos el DDL para una vista presente en la instancia
+         * de Base de Datos seleccionada.
+         */
+        [WebMethod]
         public string getViewDDL(string aUser, string aDataBase, string aPassword, string aViewName)
         {
             prepareMSSQLConnectionString(aUser, aPassword, aDataBase);
@@ -2062,6 +2110,11 @@ namespace MyDBManager
             return vDDLResult;
 
         }
+
+        /*getExecPlan: MSSQL cuenta con un modo de texto por medio del cual podemos obtener
+         * el plan de ejecucion de una consulta, recordemos que ademas de esto, MSSQL cuenta con
+         * un modulo bastante interactivo y visual para ver esta informacion.
+         */
         [WebMethod]
         public string getExecPlan(string aUser, string aDataBase, string aPassword, string aCommand)
         {
@@ -2094,6 +2147,9 @@ namespace MyDBManager
             return vDDLResponse;
         }
 
+        /*getDBFile: Obtenemos la direccion de los archivos de Base de Datos
+         * para una Base de Datos seleccionada (debe estar presente en sys.dataBase_files)
+         */
         [WebMethod]
         public string getDBFile(string aUser, string aDataBase, string aPassword, string aDBName)
         {
@@ -2114,6 +2170,10 @@ namespace MyDBManager
             vMSSQLConnection.Close();
             return vDBFile;
         }
+
+        /*getSchemaData: Obtenemos la informacion relevante para un Schema/Base de Datos
+         * nombre, tamaño, espacio en disco, etc...
+         */
         [WebMethod]
         public List<string> getSchemaData(string aUser, string aDataBase, string aPassword)
         {
@@ -2149,6 +2209,9 @@ namespace MyDBManager
 
         }
 
+        /*getInfoSession: Obtiene la informacion de las sesiones activas en la instancia
+         * de Base de Datos seleccionada
+         */
         [WebMethod]
         public XmlDocument getInfoSesion(string aUser, string aDataBase, string aPassword)
         {
@@ -2324,6 +2387,9 @@ namespace MyDBManager
             return xmlDoc;
         }
 
+        /*isLogin: Verifica la autenticidad de un usario para acceder a la instancia
+         * de Base de Datos
+        */
         [WebMethod]
         public bool isLogin(string aUser, string aDataBase, string aPassword)
         {
@@ -2353,6 +2419,8 @@ namespace MyDBManager
         }
 
         //CLASSMETHODS
+        /*prepareMSSQLConnectionString: prepara el string de conexion para una Base de Datos MSSQL
+         */
         public void prepareMSSQLConnectionString(string aUser, string aPassword, string aDataBase)
         {
             vConnectionString = String.Format(MyDBManager.Constants.MSSQL_CONNECTION_STRING, aDataBase, aUser, aPassword);
